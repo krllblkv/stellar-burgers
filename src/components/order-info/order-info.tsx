@@ -1,15 +1,34 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from '../../services/store';
+import { useSelector, useDispatch } from '../../services/store';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { fetchIngredients } from '../../services/slices/ingredientsSlice';
+import { fetchFeeds } from '../../services/slices/feedSlice';
+import { fetchUserOrders } from '../../services/slices/feedSlice';
 
 export const OrderInfo: FC = () => {
   const { number } = useParams();
+  const dispatch = useDispatch();
+
   const orders = useSelector((store) => store.feed.orders);
   const userOrders = useSelector((store) => store.feed.userOrders);
   const ingredients = useSelector((store) => store.ingredients.ingredients);
+  const ingredientsLoading = useSelector((store) => store.ingredients.loading);
+  const feedsLoading = useSelector((store) => store.feed.loading);
+
+  useEffect(() => {
+    if (ingredients.length === 0) {
+      dispatch(fetchIngredients());
+    }
+    if (orders.length === 0) {
+      dispatch(fetchFeeds());
+    }
+    if (window.location.pathname.includes('/profile/orders')) {
+      dispatch(fetchUserOrders());
+    }
+  }, [dispatch, ingredients.length, orders.length]);
 
   const orderData = useMemo(() => {
     const allOrders = [...orders, ...userOrders];
@@ -57,7 +76,7 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (ingredientsLoading || feedsLoading || !orderInfo) {
     return <Preloader />;
   }
 
