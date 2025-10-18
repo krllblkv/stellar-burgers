@@ -23,7 +23,10 @@ const constructorSlice = createSlice({
         state.ingredients.push(action.payload);
       },
       prepare: (ingredient: TIngredient) => ({
-        payload: { ...ingredient, id: crypto.randomUUID() }
+        payload: {
+          ...ingredient,
+          id: Math.random().toString(36).substring(2, 11)
+        }
       })
     },
     removeIngredient: (state, action: PayloadAction<string>) => {
